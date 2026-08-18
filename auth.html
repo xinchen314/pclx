@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账号中心 · PCLX</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--bg:#0a0e17;--card:#141b2e;--line:rgba(255,255,255,.08);--text:#e8ecf4;--sub:#9aa5c0;
+    --green:#5ee6a5;--cyan:#4dd7e6;--grad:linear-gradient(135deg,#5ee6a5,#4dd7e6,#5b8cff)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:radial-gradient(600px 400px at 20% 10%,rgba(94,230,165,.08),transparent 60%),
+    radial-gradient(600px 400px at 80% 30%,rgba(91,140,255,.08),transparent 60%)}
+  a{color:inherit;text-decoration:none}
+  nav{display:flex;align-items:center;justify-content:space-between;max-width:960px;margin:0 auto;padding:18px 24px}
+  .logo{font-weight:800;font-size:18px}
+  nav a{color:var(--sub);font-size:14px}
+  .wrap{max-width:520px;margin:40px auto;padding:0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px}
+  h1{font-size:24px;margin-bottom:6px}
+  .sub{color:var(--sub);font-size:13px;margin-bottom:24px;line-height:1.7}
+  label{display:block;font-size:13px;color:var(--sub);margin:14px 0 6px}
+  input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:9px;color:var(--text);
+    padding:11px 13px;font-size:14px;outline:none}
+  input:focus{border-color:rgba(94,230,165,.5)}
+  .btn{display:inline-block;width:100%;text-align:center;border:none;border-radius:10px;padding:12px;font-size:15px;
+    font-weight:700;cursor:pointer;margin-top:18px;background:var(--grad);color:#071018}
+  .btn.secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+  .switch{margin-top:16px;font-size:13px;color:var(--sub);text-align:center}
+  .switch a{color:var(--green)}
+  .msg{font-size:13px;margin-top:12px;min-height:20px}
+  .msg.ok{color:var(--green)}.msg.err{color:#ff6b7a}
+  .status{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .config{font-size:12px;color:var(--sub);border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
+  .config input{margin-bottom:8px;font-size:12px}
+  .hint{font-size:12px;color:var(--sub);line-height:1.7;margin-top:18px}
+  code{background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px;font-size:11px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">PCLX · 账号中心</div>
+  <a href="index.html">← 返回官网</a>
+</nav>
+<div class="wrap">
+  <div class="card">
+    <div class="status"><span class="dot"></span><span id="connState" style="font-size:13px;color:var(--sub)">正在连接……</span></div>
+    <h1 id="title">登录</h1>
+    <p class="sub">在官网注册的账号，可用于 PCLX 启动器登录并解锁联网功能（AI、联机、远程同乐、服务器等）。</p>
+
+    <!-- 登录表单 -->
+    <div id="viewLogin">
+      <label>邮箱</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+      <label>密码</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn" id="btnLogin">登 录</button>
+      <div class="msg" id="loginMsg"></div>
+      <div class="switch">还没有账号？<a href="#" id="goSignup">立即注册</a></div>
+    </div>
+
+    <!-- 注册表单 -->
+    <div id="viewSignup" style="display:none">
+      <label>邮箱</label>
+      <input id="suEmail" type="email" placeholder="you@example.com" autocomplete="email">
+      <label>密码（至少 6 位）</label>
+      <input id="suPassword" type="password" placeholder="••••••••" autocomplete="new-password">
+      <label>确认密码</label>
+      <input id="suPassword2" type="password" placeholder="••••••••" autocomplete="new-password">
+      <button class="btn" id="btnSignup">注 册</button>
+      <div class="msg" id="signupMsg"></div>
+      <div class="switch">已有账号？<a href="#" id="goLogin">直接登录</a></div>
+    </div>
+
+    <!-- 已登录 -->
+    <div id="viewLogged" style="display:none">
+      <p class="sub" id="loggedInfo"></p>
+      <button class="btn" id="btnCopyEmail" style="background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)">复制启动器登录信息</button>
+      <button class="btn secondary" id="btnLogout">退出登录</button>
+      <div class="msg" id="logoutMsg"></div>
+    </div>
+
+    <div class="hint">
+      使用步骤：① 在此注册 / 登录 → ② 在启动器「更多 → 云端账号」输入同一邮箱密码登录 → ③ 联网功能解锁。
+      <br>邮箱验证开启时，注册后请先查收邮件并确认。
+    </div>
+
+    <div class="config">
+      <b style="color:var(--text)">Supabase 连接配置</b>（默认使用下方内置值，可改为你自己的项目）
+      <label>Project URL</label>
+      <input id="cfgUrl" placeholder="https://xxx.supabase.co">
+      <label>anon public key</label>
+      <input id="cfgKey" placeholder="eyJhbGciOi...">
+      <button class="btn secondary" id="btnSaveCfg" style="margin-top:10px">保存并重连</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CFG_KEY='pclx_supabase_cfg';
+const defaults={url:'https://mhqhjjqvgqyqriocwspt.supabase.co',key:'sb_publishable_1OYRxW0_EXOJEbEmtgrsUA_INROitVj'};
+let cfg={...defaults};
+try{cfg={...defaults,...JSON.parse(localStorage.getItem(CFG_KEY)||'{}')};}catch(e){}
+document.getElementById('cfgUrl').value=cfg.url;
+document.getElementById('cfgKey').value=cfg.key;
+
+let supabase=null;
+function connect(){
+  if(!cfg.url.startsWith('http')||cfg.key.length<20){
+    document.getElementById('connState').textContent='未连接（请先填写有效的 Supabase 配置）';
+    document.getElementById('connState').style.color='#ff6b7a';
+    return;
+  }
+  try{
+    supabase=createClient(cfg.url,cfg.key);
+    document.getElementById('connState').textContent='已连接 Supabase';
+    document.getElementById('connState').style.color='var(--green)';
+    refreshSession();
+  }catch(e){
+    document.getElementById('connState').textContent='连接失败：'+e.message;
+    document.getElementById('connState').style.color='#ff6b7a';
+  }
+}
+document.getElementById('btnSaveCfg').onclick=()=>{
+  cfg={url:document.getElementById('cfgUrl').value.trim(),key:document.getElementById('cfgKey').value.trim()};
+  localStorage.setItem(CFG_KEY,JSON.stringify(cfg));
+  connect();
+};
+
+function show(view){['viewLogin','viewSignup','viewLogged'].forEach(v=>document.getElementById(v).style.display=(v===view?'':'none'));}
+function setMsg(id,t,ok){const el=document.getElementById(id);el.textContent=t;el.className='msg '+(ok?'ok':'err');}
+
+function refreshSession(){
+  if(!supabase)return;
+  supabase.auth.getUser().then(({data})=>{
+    if(data.user){
+      show('viewLogged');
+      document.getElementById('title').textContent='已登录';
+      document.getElementById('loggedInfo').textContent='当前账号：'+data.user.email+'（'+data.user.id.slice(0,8)+'…）';
+    }else{
+      show('viewLogin');
+      document.getElementById('title').textContent='登录';
+    }
+  });
+}
+
+// 登录
+document.getElementById('btnLogin').onclick=async()=>{
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  setMsg('loginMsg','',true);
+  if(!email||!password)return setMsg('loginMsg','请输入邮箱和密码。',false);
+  const {error}=await supabase.auth.signInWithPassword({email,password});
+  if(error)setMsg('loginMsg',error.message,false);
+  else{setMsg('loginMsg','登录成功！','',true);refreshSession();}
+};
+// 注册
+document.getElementById('btnSignup').onclick=async()=>{
+  const email=document.getElementById('suEmail').value.trim();
+  const p1=document.getElementById('suPassword').value;
+  const p2=document.getElementById('suPassword2').value;
+  setMsg('signupMsg','',true);
+  if(!email||!p1)return setMsg('signupMsg','请输入邮箱和密码。',false);
+  if(p1!==p2)return setMsg('signupMsg','两次输入的密码不一致。',false);
+  if(p1.length<6)return setMsg('signupMsg','密码至少 6 位。',false);
+  const {error}=await supabase.auth.signUp({email,password:p1});
+  if(error)setMsg('signupMsg',error.message,false);
+  else{
+    setMsg('signupMsg','注册成功！'+(supabase.auth.getSession()?'已自动登录。':'请前往邮箱完成验证后登录。'),true);
+    refreshSession();
+  }
+};
+// 登出
+document.getElementById('btnLogout').onclick=async()=>{
+  await supabase.auth.signOut();
+  setMsg('logoutMsg','已退出登录。',true);
+  refreshSession();
+};
+// 视图切换
+document.getElementById('goSignup').onclick=e=>{e.preventDefault();show('viewSignup');document.getElementById('title').textContent='注册';};
+document.getElementById('goLogin').onclick=e=>{e.preventDefault();show('viewLogin');document.getElementById('title').textContent='登录';};
+// 复制登录信息（占位：展示如何把登录态告知启动器）
+document.getElementById('btnCopyEmail').onclick=async()=>{
+  const {data}=await supabase.auth.getUser();
+  if(data.user){await navigator.clipboard.writeText(data.user.email);setMsg('logoutMsg','邮箱已复制：'+data.user.email,true);}
+};
+connect();
+</script>
+</body>
+</html>

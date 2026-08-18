@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCLX · 全能 Minecraft 启动器 —— 不止是启动器</title>
+<meta name="description" content="PCLX：内置 AI 智能体、Edge 内核、EasyTier 联机、局域网配对、远程同乐、服务器面板的全能 Minecraft 启动器。">
+<style>
+  :root{
+    --bg:#0a0e17; --bg2:#0f1524; --card:#141b2e; --card2:#1a2340;
+    --line:rgba(255,255,255,.08); --text:#e8ecf4; --sub:#9aa5c0;
+    --green:#5ee6a5; --cyan:#4dd7e6; --purple:#a78bfa; --blue:#5b8cff; --red:#ff6b7a; --gold:#ffd166;
+    --grad:linear-gradient(135deg,#5ee6a5 0%,#4dd7e6 45%,#5b8cff 100%);
+    --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+  ::selection{background:rgba(94,230,165,.3)}
+  a{color:inherit;text-decoration:none}
+
+  /* 背景装饰 */
+  .bg-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+    radial-gradient(600px 400px at 15% 10%,rgba(94,230,165,.10),transparent 60%),
+    radial-gradient(700px 500px at 85% 20%,rgba(91,140,255,.10),transparent 60%),
+    radial-gradient(600px 500px at 50% 90%,rgba(167,139,250,.08),transparent 60%)}
+  .bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+    background-size:48px 48px;mask-image:radial-gradient(ellipse at 50% 0%,black 30%,transparent 75%)}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+  /* 导航 */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,14,23,.75);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px}
+  .logo .cube{width:26px;height:26px;background:var(--grad);border-radius:7px;position:relative;transform:rotate(12deg);box-shadow:0 4px 18px rgba(94,230,165,.4)}
+  .logo .cube::after{content:"";position:absolute;inset:6px;background:var(--bg);border-radius:4px}
+  nav .links{display:flex;gap:26px;font-size:14px;color:var(--sub)}
+  nav .links a:hover{color:var(--text)}
+  @media(max-width:720px){nav .links{display:none}}
+
+  /* Hero */
+  header{position:relative;padding:110px 0 90px;text-align:center}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--green);border:1px solid rgba(94,230,165,.35);background:rgba(94,230,165,.08);padding:7px 16px;border-radius:99px;margin-bottom:26px}
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  h1{font-size:clamp(38px,6vw,64px);font-weight:900;line-height:1.12;letter-spacing:-1px}
+  h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{max-width:640px;margin:22px auto 0;color:var(--sub);font-size:17px;line-height:1.8}
+  .cta{display:flex;gap:14px;justify-content:center;margin-top:38px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 30px;border-radius:12px;font-size:16px;font-weight:700;transition:transform .15s,box-shadow .15s;cursor:pointer}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--grad);color:#071018;box-shadow:0 8px 30px rgba(94,230,165,.35)}
+  .btn-ghost{border:1px solid var(--line);color:var(--text);background:rgba(255,255,255,.03)}
+  .btn-ghost:hover{border-color:rgba(255,255,255,.25)}
+  .stats{display:flex;gap:44px;justify-content:center;margin-top:64px;flex-wrap:wrap}
+  .stat b{font-size:26px;font-weight:800;display:block}
+  .stat span{color:var(--sub);font-size:13px}
+
+  /* 章节通用 */
+  section{padding:80px 0}
+  .sec-head{text-align:center;margin-bottom:52px}
+  .sec-head h2{font-size:clamp(26px,4vw,38px);font-weight:800}
+  .sec-head p{color:var(--sub);margin-top:12px;font-size:15px}
+  .sec-tag{display:inline-block;font-size:12px;color:var(--cyan);border:1px solid rgba(77,215,230,.3);background:rgba(77,215,230,.07);padding:4px 12px;border-radius:99px;margin-bottom:14px}
+
+  /* 功能卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px;transition:transform .2s,border-color .2s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.18)}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--grad);opacity:0;transition:opacity .2s}
+  .card:hover::before{opacity:1}
+  .card .ico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;background:rgba(255,255,255,.05)}
+  .card h3{font-size:17px;font-weight:700;margin-bottom:10px}
+  .card p{color:var(--sub);font-size:13.5px;line-height:1.75}
+  .card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .tag{font-size:11.5px;color:var(--sub);border:1px solid var(--line);background:rgba(255,255,255,.03);padding:3px 9px;border-radius:6px}
+  .tag.done{color:var(--green);border-color:rgba(94,230,165,.3);background:rgba(94,230,165,.07)}
+  .tag.hot{color:var(--gold);border-color:rgba(255,209,102,.3);background:rgba(255,209,102,.07)}
+  .card .state{position:absolute;top:18px;right:18px;font-size:11px;padding:3px 9px;border-radius:6px}
+  .state.ready{color:var(--green);background:rgba(94,230,165,.1);border:1px solid rgba(94,230,165,.3)}
+  .state.plan{color:var(--sub);background:rgba(255,255,255,.04);border:1px solid var(--line)}
+
+  /* 路线图 */
+  .roadmap{position:relative;max-width:860px;margin:0 auto}
+  .phase{display:flex;gap:20px;margin-bottom:26px;position:relative}
+  .phase::before{content:"";position:absolute;left:19px;top:44px;bottom:-26px;width:2px;background:var(--line)}
+  .phase:last-child::before{display:none}
+  .phase .num{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;background:var(--card2);border:1px solid var(--line);z-index:1}
+  .phase.done .num{background:var(--grad);color:#071018;border:none}
+  .phase .body{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px}
+  .phase .body h4{font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .phase .body ul{list-style:none;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
+  .phase .body li{font-size:12.5px;color:var(--sub);border:1px solid var(--line);padding:4px 10px;border-radius:7px;background:rgba(255,255,255,.02)}
+  .phase.done .body li{color:var(--green);border-color:rgba(94,230,165,.25);background:rgba(94,230,165,.05)}
+
+  /* 彩蛋区 */
+  .easter{background:linear-gradient(180deg,transparent,rgba(167,139,250,.05),transparent);text-align:center}
+  .egg-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;max-width:960px;margin:0 auto}
+  .egg{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 16px;cursor:pointer;transition:transform .15s}
+  .egg:hover{transform:scale(1.04)}
+  .egg .e{font-size:30px;margin-bottom:8px}
+  .egg b{font-size:14px}
+  .egg span{display:block;color:var(--sub);font-size:12px;margin-top:6px}
+
+  /* 页脚 */
+  footer{border-top:1px solid var(--line);padding:44px 0 50px;color:var(--sub);font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  footer b{color:var(--text)}
+
+  /* 文言文彩蛋 */
+  body.classic h1 .grad{background:linear-gradient(135deg,#ffd166,#ff9f6b)}
+  body.classic{--green:#ffd166;--grad:linear-gradient(135deg,#ffd166 0%,#ff9f6b 100%)}
+
+  /* 滚动显现 */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+
+<nav>
+  <div class="wrap">
+    <div class="logo"><span class="cube"></span>PCLX<span style="color:var(--sub);font-weight:400;font-size:13px">· 全能启动器</span></div>
+    <div class="links">
+      <a href="#features">功能</a>
+      <a href="#roadmap">路线图</a>
+      <a href="#eggs">彩蛋</a>
+      <a href="auth.html">账号中心</a>
+      <a href="#" id="btnClassic">文言文</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="badge"><span class="dot"></span>基于 PCL 深度魔改 · 正在持续迭代中</div>
+    <h1>不止是启动器。<br>是<span class="grad"> AI 智能体 + 联机中枢 + 服务器面板</span></h1>
+    <p class="sub">PCLX 把 AI 助手、Edge 内核、EasyTier 联机、局域网自动配对、Sunshine 串流、MCSM 式服务器管理全部装进一个 Minecraft 启动器里——开箱即用，可玩可炸。</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#roadmap">查看路线图</a>
+      <a class="btn btn-ghost" href="#features">浏览全部功能</a>
+      <a class="btn btn-ghost" href="auth.html">注册 / 登录</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>8</b><span>功能已落地</span></div>
+      <div class="stat"><b>60</b><span>步爆改规划</span></div>
+      <div class="stat"><b>11</b><span>大功能板块</span></div>
+      <div class="stat"><b>∞</b><span>彩蛋整活</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">FEATURES</span>
+      <h2>功能全景</h2>
+      <p>启动器核心 · AI 智能 · 联机网络 · 桌面系统 · UI 自定义 · 工具编辑 · 网页内容 · 云服务 · 串流远程 · 彩蛋整活 · 运维开发</p>
+    </div>
+    <div class="cards">
+
+      <div class="card reveal">
+        <span class="state ready">已实现</span>
+        <div class="ico">🤖</div>
+        <h3>AI 与智能</h3>
+        <p>内置 AI 对话（OpenAI 兼容接口）、function calling 工具调用、启动参数调优，聚合豆包 / DeepSeek / MiMo / GLM / ChatGPT / z.ai 网页版，支持 AI 评分榜与云端模型下发。</p>
+        <div class="tags">
+          <span class="tag done">AI 助手</span><span class="tag done">工具调用</span>
+          <span class="tag done">网页版聚合</span><span class="tag hot">参数调优</span><span class="tag">评分榜</span><span class="tag">云端下发</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state ready">已实现</span>
+        <div class="ico">🌐</div>
+        <h3>联机与网络</h3>
+        <p>EasyTier 联机（修复节点状态查询）、同一 WiFi 自动发现与配对联机、cpolar 内网穿透、热点直连，并集成 MCSM 式服务器面板、雨云 API 与免费服务器推广。</p>
+        <div class="tags">
+          <span class="tag done">EasyTier 联机</span><span class="tag done">局域网配对</span>
+          <span class="tag done">服务器面板</span><span class="tag hot">cpolar</span><span class="tag">雨云 API</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state ready">已实现</span>
+        <div class="ico">🎮</div>
+        <h3>串流与远程</h3>
+        <p>仿 Steam 远程同乐：Sunshine 服务端一键安装 + Moonlight 手机端，局域网 / 热点 / 公网三通道串流，未来支持 noVNC 远程桌面与 Windows / Android TV / Phone / Linux 全平台联动。</p>
+        <div class="tags">
+          <span class="tag done">Sunshine 串流</span><span class="tag done">三通道连接</span>
+          <span class="tag">noVNC</span><span class="tag">全平台联动</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state ready">已实现</span>
+        <div class="ico">🖥️</div>
+        <h3>启动器核心</h3>
+        <p>游戏启动与版本管理、模组整合、离线 / 正版（微软）登录——正版登录已修复 Azure Client ID 可配置，未来加入正版劝导与启动器 Mod 文件夹机制。</p>
+        <div class="tags">
+          <span class="tag done">微软登录修复</span><span class="tag done">版本管理</span>
+          <span class="tag">模组整合</span><span class="tag">正版劝导</span><span class="tag">Mod 文件夹</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state ready">已实现</span>
+        <div class="ico">🧩</div>
+        <h3>桌面与系统</h3>
+        <p>内嵌 Edge（WebView2）浏览器内核，支持自定义 .exe 快捷启动；规划侧边栏常驻、Windows 壁纸导入、计算器、画图、微软商店快捷方式、系统状态监控与折线统计图导出。</p>
+        <div class="tags">
+          <span class="tag done">WebView2 内核</span><span class="tag done">内置浏览器</span>
+          <span class="tag">系统监控</span><span class="tag">壁纸导入</span><span class="tag">计算器</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state ready">已实现</span>
+        <div class="ico">🎨</div>
+        <h3>UI 与自定义</h3>
+        <p>模块全自定义、主题系统、自定义壁纸、大屏模式；多语言支持简中 / 繁中 / 文言文 / 梗体中文 / 英语 / 法语……（本页右上角已内置文言文彩蛋）。</p>
+        <div class="tags">
+          <span class="tag done">页面骨架</span><span class="tag">主题系统</span><span class="tag">多语言</span><span class="tag">大屏模式</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state plan">规划中</span>
+        <div class="ico">🧰</div>
+        <h3>工具与编辑器</h3>
+        <p>投影文件编辑、种子查看器、连点器、日志系统、版本检查 + 蓝奏云更新、存档地图编辑——把实用工具塞进启动器。</p>
+        <div class="tags">
+          <span class="tag">投影编辑</span><span class="tag">种子查看</span><span class="tag">连点器</span><span class="tag">蓝奏云更新</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state plan">规划中</span>
+        <div class="ico">🕸️</div>
+        <h3>网页与内容</h3>
+        <p>内置 B 站 / 抖音 / Xbox / Minecraft 官网 / Listen 1 音乐快捷入口，规划代码编辑器与 Git 集成。</p>
+        <div class="tags">
+          <span class="tag">B 站</span><span class="tag">抖音</span><span class="tag">Listen 1</span><span class="tag">代码编辑器</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state plan">规划中</span>
+        <div class="ico">☁️</div>
+        <h3>云服务与账号</h3>
+        <p>邮箱登录、云端验证、Supabase 后端、公开皮肤站、玩家推荐服务器、成就统计与同步——让启动器连上云端。</p>
+        <div class="tags">
+          <span class="tag">Supabase</span><span class="tag">皮肤站</span><span class="tag">成就同步</span><span class="tag">推荐服务器</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state plan">规划中</span>
+        <div class="ico">💥</div>
+        <h3>彩蛋与整活</h3>
+        <p>今日人品、每日抽奖、熊猫烧香、启动器偷跑、土豆服务器、龙猫三连问、豆包祖安模式、V 社权威登录、内存优化（物理关机）……愚人节专属入口。</p>
+        <div class="tags">
+          <span class="tag hot">今日人品</span><span class="tag hot">每日抽奖</span><span class="tag">物理关机</span><span class="tag">熊猫烧香</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <span class="state plan">规划中</span>
+        <div class="ico">⚙️</div>
+        <h3>运维与开发</h3>
+        <p>Docker 集成、Linux 终端、Android 模拟器、日志清理、云端加密、反编译混淆、Supabase 统计与 CI/CD 规划。</p>
+        <div class="tags">
+          <span class="tag">Docker</span><span class="tag">CI/CD</span><span class="tag">反混淆</span><span class="tag">云端加密</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">ROADMAP</span>
+      <h2>60 步爆改路线图</h2>
+      <p>已完成 8 项 · 剩余按依赖与价值推进</p>
+    </div>
+    <div class="roadmap">
+
+      <div class="phase done reveal">
+        <div class="num">✓</div>
+        <div class="body">
+          <h4>阶段 1 · AI 与内核地基 <span style="color:var(--green);font-size:12px;font-weight:400">（已完成）</span></h4>
+          <ul>
+            <li>AI 助手（API 对话）</li><li>Edge WebView2 内核</li><li>AI 网页版聚合（豆包/DeepSeek/MiMo/GLM/ChatGPT）</li>
+            <li>智能体联机工具（function calling）</li><li>局域网自动发现配对</li><li>微软登录修复</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase done reveal">
+        <div class="num">✓</div>
+        <div class="body">
+          <h4>阶段 2 · 联机与服务器 <span style="color:var(--green);font-size:12px;font-weight:400">（已完成）</span></h4>
+          <ul>
+            <li>EasyTier 联机（节点状态修复）</li><li>远程同乐（Sunshine 串流三通道）</li><li>MCSM 式服务器管理面板</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase reveal">
+        <div class="num">3</div>
+        <div class="body">
+          <h4>阶段 3 · AI 深度化</h4>
+          <ul>
+            <li>AI 启动参数调优</li><li>AI 评分榜</li><li>云端模型下发</li><li>z.ai 集成</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase reveal">
+        <div class="num">4</div>
+        <div class="body">
+          <h4>阶段 4 · 云服务与账号</h4>
+          <ul>
+            <li>Supabase 后端</li><li>邮箱登录 / 云端验证</li><li>公开皮肤站</li><li>成就统计与同步</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase reveal">
+        <div class="num">5</div>
+        <div class="body">
+          <h4>阶段 5 · 桌面工具全家桶</h4>
+          <ul>
+            <li>系统状态监控 + 折线图导出</li><li>计算器 / 画图</li><li>Windows 壁纸导入</li><li>自定义 .exe 快捷启动</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase reveal">
+        <div class="num">6</div>
+        <div class="body">
+          <h4>阶段 6 · UI 主题化与多语言</h4>
+          <ul>
+            <li>模块全自定义</li><li>主题系统</li><li>多语言（含文言文 / 梗体中文）</li><li>大屏模式</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase reveal">
+        <div class="num">7</div>
+        <div class="body">
+          <h4>阶段 7 · 工具与编辑器</h4>
+          <ul>
+            <li>投影文件编辑</li><li>种子查看器</li><li>连点器</li><li>蓝奏云更新</li><li>存档地图编辑</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase reveal">
+        <div class="num">8</div>
+        <div class="body">
+          <h4>阶段 8 · 彩蛋整活与运维</h4>
+          <ul>
+            <li>今日人品 / 每日抽奖 / 物理关机等全部彩蛋</li><li>Docker / Linux 终端</li><li>CI/CD 与云端加密</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="easter" id="eggs">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">EASTER EGGS</span>
+      <h2>整活实验室</h2>
+      <p>点击彩蛋卡片，提前感受启动器的灵魂（当前为网页演示，随启动器逐步实装）</p>
+    </div>
+    <div class="egg-box reveal">
+      <div class="egg" onclick="egg('今日人品')"><div class="e">🎲</div><b>今日人品</b><span>点击测一测今天的人品值</span></div>
+      <div class="egg" onclick="egg('每日抽奖')"><div class="e">🎁</div><b>每日抽奖</b><span>抽到就是赚到</span></div>
+      <div class="egg" onclick="egg('熊猫烧香')"><div class="e">🐼</div><b>熊猫烧香</b><span>经典怀旧病毒风</span></div>
+      <div class="egg" onclick="egg('土豆服务器')"><div class="e">🥔</div><b>土豆服务器</b><span>卡顿的锅是土豆的</span></div>
+      <div class="egg" onclick="egg('物理关机')"><div class="e">🔌</div><b>内存优化</b><span>优化内存（物理）</span></div>
+      <div class="egg" onclick="egg('改名破产了')"><div class="e">🪦</div><b>PCL 改名「破产了」</b><span>愚人节限定</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><b>PCLX</b> · 全能 Minecraft 启动器 &nbsp;|&nbsp; 配套官网</div>
+    <div>托管信息占位 · 更新于 2026-08</div>
+  </div>
+</footer>
+
+<script>
+  // 滚动显现
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // 文言文彩蛋：替换关键文案
+  let classic=false;
+  const dict={
+    '全能启动器':'全能启动器',
+    '不止是启动器':'岂止为启动器',
+    '功能全景':'功能之全貌',
+    '路线图':'行路之图',
+    '彩蛋':'彩蛋（蛋者，戏也）',
+    '已完成':'已成',
+    '规划中':'待作',
+    '查看路线图':'观行路之图',
+    '浏览全部功能':'览功能之全貌',
+    '功能已落地':'能已成',
+    '步爆改规划':'步爆改之谋',
+    '大功能板块':'大板块',
+    '彩蛋整活':'整活（蛋）',
+    '整活实验室':'整活之室',
+    '点击彩蛋卡片':'轻叩彩蛋卡片',
+    '即将上线':'将成'
+  };
+  document.getElementById('btnClassic').addEventListener('click',e=>{
+    e.preventDefault();
+    classic=!classic;
+    document.body.classList.toggle('classic',classic);
+    document.getElementById('btnClassic').textContent=classic?'白话文':'文言文';
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    const nodes=[];let n;
+    while(n=walker.nextNode())nodes.push(n);
+    nodes.forEach(node=>{
+      const t=node.nodeValue;
+      for(const[k,v]of Object.entries(dict)){
+        if(t.includes(k)){node.nodeValue=t.split(k).join(classic?v:k);break;}
+      }
+    });
+  });
+
+  // 彩蛋卡片点击
+  function egg(name){
+    const msgs={
+      '今日人品':'今日人品：'+Math.floor(Math.random()*101)+' 分'+(Math.random()<.3?'（大凶，建议躺平）':'（吉，宜开服）'),
+      '每日抽奖':'恭喜抽中：'+(Math.random()<.1?'管理员权限':'橡木原木 ×'+Math.floor(Math.random()*64+1)),
+      '熊猫烧香':'警告：检测到熊猫正在烧香……（纯属整活，无实际危害）',
+      '土豆服务器':'服务器卡顿报告：已定位到锅，确认是土豆供电不足。',
+      '物理关机':'内存优化成功：已将内存物理关机（请轻拍机箱致敬）。',
+      '改名破产了':'启动器已改名「破产了」。祝您开服顺利，破产愉快。'
+    };
+    alert(msgs[name]||name+'（整活功能规划中，敬请期待）');
+  }
+</script>
+</body>
+</html>
